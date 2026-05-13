@@ -6,13 +6,13 @@ plugins {
 }
 
 android {
-    namespace = "com.diiage.template"
+    namespace = "com.cyna.app"
     compileSdk {
         version = release(36)
     }
 
     defaultConfig {
-        applicationId = "com.diiage.template"
+        applicationId = "com.cyna.app"
         minSdk = 29
         targetSdk = 36
         versionCode = 1
