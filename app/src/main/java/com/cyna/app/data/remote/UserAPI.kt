@@ -1,6 +1,7 @@
 package com.cyna.app.data.remote
 
-import com.cyna.app.data.dto.*
+import com.cyna.app.data.dto.UserDto
+import com.cyna.app.data.dto.SubscriptionDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.*

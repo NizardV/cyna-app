@@ -29,13 +29,12 @@ import androidx.navigation.compose.composable
 import com.cyna.app.ui.screens.ComponentShowcaseScreen
 import com.cyna.app.ui.screens.catalog.CatalogScreen
 import com.cyna.app.ui.screens.profile.ProfileScreen
+import com.cyna.app.ui.screens.orders.OrderHistoryScreen
 
 sealed class Destination(val route: String, val arguments: List<NamedNavArgument> = emptyList()) {
-    object Splash   : Destination(route = "splash")
-    object Home     : Destination(route = "home")
-    object Login    : Destination(route = "login")
     object Profile  : Destination(route = "profile")
     object Catalog  : Destination(route = "catalog")
+    object OrdersHistory : Destination(route = "orders-history")
 }
 
 fun NavGraphBuilder.composable(
@@ -61,10 +60,16 @@ fun NavHost(navController: NavHostController, modifier: Modifier = Modifier) {
         startDestination = Destination.Catalog.route, // change start as needed
         modifier = modifier
     ) {
+        composable(Destination.OrdersHistory) {
+            OrderHistoryScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
         composable(Destination.Profile) {
             ProfileScreen(
                 onNavigateToCatalog = { navController.navigate(Destination.Catalog) },
-                onNavigateToOrders = { /* TODO: OrdersScreen */ }
+                onNavigateToOrders = { navController.navigate(Destination.Orders) }
             )
         }
 
