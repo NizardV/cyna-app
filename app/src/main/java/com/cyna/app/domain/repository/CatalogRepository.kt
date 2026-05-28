@@ -1,18 +1,17 @@
 package com.cyna.app.domain.repository
 
-import com.cyna.app.domain.model.LoginResponse
-import com.cyna.app.data.remote.ChallengeAPI
-import com.cyna.app.domain.model.Challenge
-import com.cyna.app.domain.repository.ChallengeRepository
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import com.cyna.app.domain.model.Category
+import com.cyna.app.domain.model.CatalogPage
 
 interface CatalogRepository {
-    /**
-     * Authenticates a user with the provided identification.
-     *
-     * @param identification The user's identification (username, email, etc.)
-     * @return LoginResponse containing authentication result
-     */
-    suspend fun login(identification: String): LoginResponse
+    suspend fun getCategories(): List<Category>
+    suspend fun getCatalogProducts(
+        query: String = "",
+        categoryIds: List<String> = emptyList(),
+        maxPrice: Double? = null,
+        onlyAvailable: Boolean = false,
+        sortBy: String = "relevance",
+        page: Int = 1,
+        pageSize: Int = 9
+    ): CatalogPage
 }

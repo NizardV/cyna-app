@@ -77,7 +77,7 @@ val appModule = module {
     single { UserAPI(get()) }
     single { CatalogAPI(get()) }
     single { OrderHistoryAPI(get()) }
- 
+
     // ── Repository layer ──────────────────────────────────────────────────────
     single<LoginRepository>  { LoginRepositoryImpl(get()) }
     single<UserRepository>   { UserRepositoryImpl(get()) }
