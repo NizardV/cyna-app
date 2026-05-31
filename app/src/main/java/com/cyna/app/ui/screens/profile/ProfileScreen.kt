@@ -155,14 +155,16 @@ private fun ProfileContent(
                         state.newPassword,
                         onNewPasswordChange,
                         modifier = Modifier.weight(1f),
-                        isPassword = true
+                        isPassword = true,
+                        isError = state.passwordError != null
                     )
                     FieldWithLabel(
                         "Confirm",
                         state.confirmPassword,
                         onConfirmPasswordChange,
                         modifier = Modifier.weight(1f),
-                        isPassword = true
+                        isPassword = true,
+                        isError = state.passwordError == "mismatch"
                     )
                 }
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {

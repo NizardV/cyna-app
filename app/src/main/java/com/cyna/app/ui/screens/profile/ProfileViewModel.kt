@@ -5,6 +5,7 @@ import com.cyna.app.domain.model.Subscription
 import com.cyna.app.domain.model.User
 import com.cyna.app.domain.repository.UserRepository
 import dev.kindling.compose.KViewModel
+import dev.kindling.core.components.KToastManager
 import org.koin.core.component.inject
 
 interface ProfileContracts {
@@ -20,14 +21,10 @@ interface ProfileContracts {
         val newPassword: String = "",
         val confirmPassword: String = "",
         val savingPassword: Boolean = false,
+        val passwordError: String? = null,
         val cancelTarget: Subscription? = null,
         val cancelling: Boolean = false
     )
-
-    sealed interface Event {
-        data class Toast(val message: String, val isError: Boolean = false) : Event
-        object LoggedOut : Event
-    }
 }
 
 class ProfileViewModel(application: Application) :
@@ -78,8 +75,12 @@ class ProfileViewModel(application: Application) :
     fun onNameChange(v: String)            = updateState { copy(nameInput = v) }
     fun onEmailChange(v: String)           = updateState { copy(emailInput = v) }
     fun onCurrentPasswordChange(v: String) = updateState { copy(currentPassword = v) }
-    fun onNewPasswordChange(v: String)     = updateState { copy(newPassword = v) }
-    fun onConfirmPasswordChange(v: String) = updateState { copy(confirmPassword = v) }
+    fun onNewPasswordChange(v: String) = updateState {
+        copy(newPassword = v, passwordError = null)
+    }
+    fun onConfirmPasswordChange(v: String) = updateState {
+        copy(confirmPassword = v, passwordError = null)
+    }
 
     fun saveProfile() {
         val s = state.value
@@ -89,11 +90,11 @@ class ProfileViewModel(application: Application) :
             onResult = {
                 onSuccess { user ->
                     updateState { copy(savingProfile = false, user = user) }
-                    sendEvent(ProfileContracts.Event.Toast("Profile updated successfully"))
+                    KToastManager.success("Profile updated successfully")
                 }
                 onFailure { e ->
                     updateState { copy(savingProfile = false) }
-                    sendEvent(ProfileContracts.Event.Toast(e.message ?: "An error occurred", isError = true))
+                    KToastManager.error("An error occurred", e.message)
                 }
             }
         )
@@ -102,14 +103,16 @@ class ProfileViewModel(application: Application) :
     fun savePassword() {
         val s = state.value
         if (s.newPassword != s.confirmPassword) {
-            sendEvent(ProfileContracts.Event.Toast("Passwords do not match", isError = true))
+            updateState { copy(passwordError = "mismatch") }
+            KToastManager.warning("Passwords do not match")
             return
         }
         if (s.newPassword.length < 8) {
-            sendEvent(ProfileContracts.Event.Toast("Password must be at least 8 characters", isError = true))
+            updateState { copy(passwordError = "tooshort") }
+            KToastManager.warning("Password must be at least 8 characters")
             return
         }
-        updateState { copy(savingPassword = true) }
+        updateState { copy(savingPassword = true, passwordError = null) }
         fetchData(
             source = { userRepository.updatePassword(s.currentPassword, s.newPassword) },
             onResult = {
@@ -122,11 +125,11 @@ class ProfileViewModel(application: Application) :
                             confirmPassword = ""
                         )
                     }
-                    sendEvent(ProfileContracts.Event.Toast("Password updated successfully"))
+                    KToastManager.success("Password updated successfully")
                 }
                 onFailure { e ->
                     updateState { copy(savingPassword = false) }
-                    sendEvent(ProfileContracts.Event.Toast(e.message ?: "An error occurred", isError = true))
+                    KToastManager.error("An error occurred", e.message)
                 }
             }
         )
@@ -149,11 +152,11 @@ class ProfileViewModel(application: Application) :
                             subscriptions = subscriptions.filter { it.id != target.id }
                         )
                     }
-                    sendEvent(ProfileContracts.Event.Toast("Subscription cancelled"))
+                    KToastManager.success("Subscription cancelled")
                 }
                 onFailure { e ->
                     updateState { copy(cancelling = false, cancelTarget = null) }
-                    sendEvent(ProfileContracts.Event.Toast(e.message ?: "An error occurred", isError = true))
+                    KToastManager.error("An error occurred", e.message)
                 }
             }
         )

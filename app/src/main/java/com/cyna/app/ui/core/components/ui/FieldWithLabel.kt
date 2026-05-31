@@ -19,7 +19,13 @@ fun FieldWithLabel(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
+    placeholder: String = "",
+    enabled: Boolean = true,
     isPassword: Boolean = false,
+    isError: Boolean = false,
+    singleLine: Boolean = true,
+    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
+    minLines: Int = 1,
     trailingContent: (@Composable () -> Unit)? = null
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -29,13 +35,30 @@ fun FieldWithLabel(
                 KInput(
                     value = value,
                     onValueChange = onValueChange,
+                    placeholder = placeholder,
+                    enabled = enabled,
                     isPassword = isPassword,
+                    isError = isError,
+                    singleLine = singleLine,
+                    maxLines = maxLines,
+                    minLines = minLines,
                     modifier = Modifier.weight(1f)
                 )
                 trailingContent()
             }
         } else {
-            KInput(value = value, onValueChange = onValueChange, isPassword = isPassword)
+            KInput(
+                value = value,
+                onValueChange = onValueChange,
+                placeholder = placeholder,
+                enabled = enabled,
+                isPassword = isPassword,
+                isError = isError,
+                singleLine = singleLine,
+                maxLines = maxLines,
+                minLines = minLines,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }
