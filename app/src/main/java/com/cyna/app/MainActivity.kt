@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.cyna.app.ui.core.NavHost
 import com.cyna.app.ui.core.theme.AppTheme
+import dev.kindling.core.components.Toaster
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

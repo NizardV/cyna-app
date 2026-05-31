@@ -1,17 +1,13 @@
 package com.cyna.app.mock.handlers
 
+import com.cyna.app.data.dto.MessageResponse
 import com.cyna.app.mock.factories.MockFactories
 import com.cyna.app.mock.registry.MockHandler
-import com.cyna.app.mock.registry.MockRegistry
 import io.ktor.http.*
-import kotlinx.serialization.Serializable
 
 // ---------------------------------------------------------------------------
 // Auth handlers — mirrors handlers/auth.js
 // ---------------------------------------------------------------------------
-
-@Serializable
-private data class MessageResponse(val message: String)
 
 val authHandlers: List<MockHandler> = listOf(
 

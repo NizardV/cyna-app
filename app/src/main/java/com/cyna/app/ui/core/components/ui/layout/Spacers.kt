@@ -1,4 +1,4 @@
-package com.cyna.app.ui.core.components.layout
+package com.cyna.app.ui.core.components.ui.layout
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height

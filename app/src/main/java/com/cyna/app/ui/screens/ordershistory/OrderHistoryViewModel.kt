@@ -1,29 +1,27 @@
-package com.cyna.app.ui.screens.orders-history
+package com.cyna.app.ui.screens.ordershistory
 
 import android.app.Application
 import com.cyna.app.domain.model.AccountOrder
 import com.cyna.app.domain.model.User
-import com.cyna.app.domain.repository.OrderRepository
+import com.cyna.app.domain.repository.OrderHistoryRepository
 import com.cyna.app.domain.repository.UserRepository
-import com.cyna.app.ui.core.ViewModel
+import dev.kindling.compose.KViewModel
 import org.koin.core.component.inject
 
-// ── State ─────────────────────────────────────────────────────────────────────
-
-data class OrderHistoryState(
-    val orders: List<AccountOrder> = emptyList(),
-    val user: User? = null,
-    val loading: Boolean = true,
-    val loadingUser: Boolean = true,
-    val error: String? = null,
-    val searchQuery: String = "",
-    val selectedYear: String = "all"
-)
-
-// ── ViewModel ─────────────────────────────────────────────────────────────────
+interface OrderHistoryContracts {
+    data class UiState(
+        val orders: List<AccountOrder> = emptyList(),
+        val user: User? = null,
+        val loading: Boolean = true,
+        val loadingUser: Boolean = true,
+        val error: String? = null,
+        val searchQuery: String = "",
+        val selectedYear: String = "all"
+    )
+}
 
 class OrderHistoryViewModel(application: Application) :
-    ViewModel<OrderHistoryState>(OrderHistoryState(), application) {
+    KViewModel<OrderHistoryContracts.UiState>(OrderHistoryContracts.UiState(), application) {
 
     private val orderHistoryRepository: OrderHistoryRepository by inject()
     private val userRepository: UserRepository by inject()
@@ -63,8 +61,8 @@ class OrderHistoryViewModel(application: Application) :
         )
     }
 
-    fun onSearchChange(q: String) = updateState { copy(searchQuery = q) }
-    fun onYearChange(year: String) = updateState { copy(selectedYear = year) }
+    fun onSearchChange(q: String)    = updateState { copy(searchQuery = q) }
+    fun onYearChange(year: String)   = updateState { copy(selectedYear = year) }
 
     fun retry() {
         updateState { copy(loading = true, loadingUser = true, error = null) }

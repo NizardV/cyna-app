@@ -39,9 +39,6 @@ private fun futureDateIso(daysAhead: Int = Random.nextInt(30) + 30): String {
     }
 }
 
-/** Generate [n] items via [factory]. */
-fun <T> makeMany(n: Int, factory: () -> T): List<T> = (1..n).map { factory() }
-
 // ---------------------------------------------------------------------------
 // DTOs used by the mock layer (serialisable)
 // ---------------------------------------------------------------------------
@@ -220,4 +217,6 @@ object MockFactories {
         token = "eyJ.${List(64) { ('a'..'z').random() }.joinToString("")}.mock",
         user = user,
     )
+
+    fun <T> makeMany(n: Int, factory: () -> T): List<T> = (1..n).map { factory() }
 }

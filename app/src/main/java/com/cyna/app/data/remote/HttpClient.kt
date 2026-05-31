@@ -17,7 +17,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.*
-import dev.kindling.core.components.Toaster
+import dev.kindling.core.components.KToastManager
 
 fun createHttpClient(
     baseUrl: String,

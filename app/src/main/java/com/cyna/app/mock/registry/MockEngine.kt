@@ -4,11 +4,13 @@ import io.ktor.client.engine.*
 import io.ktor.client.engine.mock.*
 import io.ktor.client.request.*
 import io.ktor.http.*
+import io.ktor.http.content.OutgoingContent
 import io.ktor.utils.io.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.encodeToJsonElement
+import kotlinx.serialization.serializer
 
 /**
  * Builds a Ktor [MockEngine] backed by [MockRegistry].
@@ -64,12 +66,22 @@ fun buildMockEngine(delayMs: Long = 400L): HttpClientEngine = MockEngine { reque
             onSuccess = { data ->
                 val json = when (data) {
                     null -> "null"
-                    is String -> data                         // already raw JSON
+                    is String -> data
                     is Unit -> "{}"
+                    is List<*> -> {
+                        val elements = data.map { item ->
+                            json.encodeToJsonElement(
+                                @Suppress("UNCHECKED_CAST")
+                                json.serializersModule.serializer(item!!::class.java),
+                                item
+                            )
+                        }
+                        Json.encodeToString(elements)
+                    }
                     else -> json.encodeToString(
                         json.serializersModule.serializer(data::class.java),
                         @Suppress("UNCHECKED_CAST")
-                        data as Any
+                        data
                     )
                 }
                 respond(

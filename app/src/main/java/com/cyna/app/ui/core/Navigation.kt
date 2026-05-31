@@ -24,16 +24,12 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavOptions
 import androidx.navigation.Navigator
-import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.cyna.app.ui.screens.ComponentShowcaseScreen
-import com.cyna.app.ui.screens.catalog.CatalogScreen
-import com.cyna.app.ui.screens.profile.ProfileScreen
-import com.cyna.app.ui.screens.orders.OrderHistoryScreen
+import com.cyna.app.ui.core.components.ui.AccountSection
+import com.cyna.app.ui.core.components.ui.NavTab
 
 sealed class Destination(val route: String, val arguments: List<NamedNavArgument> = emptyList()) {
     object Profile  : Destination(route = "profile")
-    object Catalog  : Destination(route = "catalog")
     object OrdersHistory : Destination(route = "orders-history")
 }
 
@@ -55,26 +51,20 @@ fun NavController.navigate(
 
 @Composable
 fun NavHost(navController: NavHostController, modifier: Modifier = Modifier) {
-    NavHost(
+    androidx.navigation.compose.NavHost(
         navController = navController,
-        startDestination = Destination.Catalog.route, // change start as needed
+        startDestination = Destination.OrdersHistory.route,
         modifier = modifier
     ) {
         composable(Destination.OrdersHistory) {
-            OrderHistoryScreen(
-                onNavigateBack = { navController.popBackStack() }
+            AccountSection(
+                initialTab = NavTab.ORDERS
             )
         }
-
         composable(Destination.Profile) {
-            ProfileScreen(
-                onNavigateToCatalog = { navController.navigate(Destination.Catalog) },
-                onNavigateToOrders = { navController.navigate(Destination.Orders) }
+            AccountSection(
+                initialTab = NavTab.PROFILE
             )
-        }
-
-        composable(Destination.Catalog) {
-            CatalogScreen()
         }
     }
 }

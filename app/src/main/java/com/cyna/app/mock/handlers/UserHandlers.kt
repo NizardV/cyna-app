@@ -1,5 +1,6 @@
 package com.cyna.app.mock.handlers
 
+import com.cyna.app.data.dto.MessageResponse
 import com.cyna.app.mock.factories.MockFactories
 import com.cyna.app.mock.factories.MockUser
 import com.cyna.app.mock.registry.MockHandler
@@ -28,9 +29,6 @@ private val failureMessages = listOf(
 private fun randomFailure() {
     if (Math.random() < FAILURE_RATE) error(failureMessages.random())
 }
-
-@Serializable
-private data class MessageResponse(val message: String)
 
 // ---------------------------------------------------------------------------
 // User handlers — mirrors handlers/user.js
@@ -77,9 +75,7 @@ val userHandlers: List<MockHandler> = listOf(
         method = HttpMethod.Get,
         path = "/user/subscriptions",
         resolver = { _, _ ->
-            MockFactories.makeMany((1..3).random()) {
-                MockFactories.makeSubscription(status = "active")
-            }
+            MockFactories.makeMany(3) { MockFactories.makeSubscription() }
         }
     ),
 )

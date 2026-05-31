@@ -7,13 +7,14 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.http.HttpStatusCode
+import io.ktor.util.reflect.typeInfo
 
 internal class CatalogAPI(private val client: HttpClient) {
 
     suspend fun getCategories(): List<CategoryDto> =
         client.get("categories")
             .accept(HttpStatusCode.OK)
-            .body()
+            .body(typeInfo<List<CategoryDto>>())
 
     suspend fun getCatalogProducts(
         query: String = "",
@@ -31,5 +32,5 @@ internal class CatalogAPI(private val client: HttpClient) {
         parameter("sortBy", sortBy)
         parameter("page", page.toString())
         parameter("pageSize", pageSize.toString())
-    }.accept(HttpStatusCode.OK).body()
+    }.accept(HttpStatusCode.OK).body<CatalogPageDto>()
 }
