@@ -17,6 +17,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cyna.app.domain.model.Subscription
 import androidx.navigation.NavController
 import com.cyna.app.ui.core.components.ui.CancelDialog
+import com.cyna.app.ui.core.components.ui.FieldMaskWithLabel
 import com.cyna.app.ui.core.components.ui.FieldWithLabel
 import com.cyna.app.ui.core.components.ui.SectionCard
 import com.cyna.app.ui.core.components.ui.profile.SubscriptionRow
@@ -107,9 +108,10 @@ private fun ProfileContent(
                     value = state.nameInput,
                     onValueChange = onNameChange
                 )
-                FieldWithLabel(
+                FieldMaskWithLabel(
                     label = "Email address",
                     value = state.emailInput,
+                    mask = KMaskPattern.Email,
                     onValueChange = onEmailChange,
                     trailingContent = if (state.user?.isConfirmed == true) {
                         {

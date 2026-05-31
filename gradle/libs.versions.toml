@@ -14,7 +14,7 @@ koin = "4.2.1"
 # Ktor Client
 ktor = "3.5.0"
 kotlinxSerialization = "1.11.0"
-kindling = "1.0.5"
+kindling = "1.0.7"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
