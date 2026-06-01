@@ -1,5 +1,6 @@
 package com.cyna.app.data.remote
 
+import com.cyna.app.data.dto.ErrorResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.cio.CIO
@@ -17,6 +18,9 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.*
+import dev.kindling.core.components.KToastManager
+import io.ktor.client.call.body
+import io.ktor.client.statement.bodyAsText
 
 fun createHttpClient(
     baseUrl: String,
@@ -47,11 +51,31 @@ fun createHttpClient(
 
     install(HttpCallValidator) {
         validateResponse { response ->
-            println("Response status: ${response.status}")
-            when (response.status.value) {
-                in 400..499 -> throw HttpException.ClientError(response.status.value, "Client error: ${response.status}")
-                in 500..599 -> throw HttpException.ServerError(response.status.value, "Server error: ${response.status}")
+            val status = response.status.value
+            when {
+                status == 200 -> Unit // OK, do nothing
+
+                status in 400..499 -> {
+                    val msg = runCatching { response.body<ErrorResponse>().text }
+                        .recoverCatching { response.bodyAsText().take(200) }
+                        .getOrDefault("No details provided")
+                    KToastManager.warning("Client error ($status)", msg)
+                    throw HttpException.ClientError(status, msg)
+                }
+
+                status in 500..599 -> {
+                    val msg = runCatching { response.body<ErrorResponse>().text }
+                        .recoverCatching { response.bodyAsText().take(200) }
+                        .getOrDefault("No details provided")
+                    KToastManager.error("Server error ($status)", msg)
+                    throw HttpException.ServerError(status, msg)
+                }
             }
+        }
+
+        handleResponseExceptionWithRequest { exception, _ ->
+            if (exception is HttpException) return@handleResponseExceptionWithRequest // already handled above
+            KToastManager.error("Network error", exception.message ?: "No details provided")
         }
     }
 }
@@ -64,7 +88,10 @@ inline fun <reified T> HttpRequestBuilder.setBodyJson(body: T) {
 fun HttpResponse.accept(vararg codes: HttpStatusCode) = apply {
     println("Checking response status: $status, accepted codes: ${codes.joinToString()}")
     if (status !in codes) {
-        throw HttpException.NotAccepted("HTTP $status not accepted. Expected: ${codes.joinToString()}")
+        val message = "Unexpected status: HTTP $status"
+        val description = "Expected: ${codes.joinToString()}"
+        KToastManager.warning(message, description)
+        throw HttpException.NotAccepted("$message. $description")
     }
 }
 
