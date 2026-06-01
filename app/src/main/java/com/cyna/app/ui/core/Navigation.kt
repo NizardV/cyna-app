@@ -27,10 +27,12 @@ import androidx.navigation.Navigator
 import androidx.navigation.compose.composable
 import com.cyna.app.ui.core.components.ui.AccountSection
 import com.cyna.app.ui.core.components.ui.NavTab
+import com.cyna.app.ui.screens.catalog.CatalogScreen
 
 sealed class Destination(val route: String, val arguments: List<NamedNavArgument> = emptyList()) {
     object Profile  : Destination(route = "profile")
     object OrdersHistory : Destination(route = "orders-history")
+    object Catalog : Destination(route = "catalog")
 }
 
 fun NavGraphBuilder.composable(
@@ -53,7 +55,7 @@ fun NavController.navigate(
 fun NavHost(navController: NavHostController, modifier: Modifier = Modifier) {
     androidx.navigation.compose.NavHost(
         navController = navController,
-        startDestination = Destination.OrdersHistory.route,
+        startDestination = Destination.Catalog.route,
         modifier = modifier
     ) {
         composable(Destination.OrdersHistory) {
@@ -64,6 +66,11 @@ fun NavHost(navController: NavHostController, modifier: Modifier = Modifier) {
         composable(Destination.Profile) {
             AccountSection(
                 initialTab = NavTab.PROFILE
+            )
+        }
+        composable(Destination.Catalog) {
+            CatalogScreen(
+                navController = navController
             )
         }
     }

@@ -45,6 +45,7 @@ internal class CatalogRepositoryImpl(
                     categoryId = p.categoryId,
                     imageUrl = p.imageUrl,
                     name = p.name,
+                    status = p.status,
                     description = p.description,
                     price = p.price,
                     billingPeriod = p.billingPeriod,

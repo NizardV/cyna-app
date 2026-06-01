@@ -12,6 +12,7 @@ data class CatalogProduct(
     val categoryId: String,
     val imageUrl: String,
     val name: String,
+    val status: String,
     val description: String,
     val price: Double,
     val billingPeriod: String,
