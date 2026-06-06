@@ -3,19 +3,19 @@ package com.cyna.app.data.dto
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal data class UpdateProfileRequest(
+data class UpdateProfileRequest(
     val name: String,
     val email: String
 )
 
 @Serializable
-internal data class UpdatePasswordRequest(
+data class UpdatePasswordRequest(
     val currentPassword: String,
     val newPassword: String
 )
 
 @Serializable
-internal data class UserDto(
+data class UserDto(
     val id: String,
     val email: String,
     val name: String,
@@ -26,7 +26,7 @@ internal data class UserDto(
 )
 
 @Serializable
-internal data class SubscriptionDto(
+data class SubscriptionDto(
     val id: String,
     val userId: String,
     val productId: String,

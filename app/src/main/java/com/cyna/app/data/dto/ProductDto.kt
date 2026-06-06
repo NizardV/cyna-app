@@ -3,7 +3,7 @@ package com.cyna.app.data.dto
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal data class ProductDto(
+data class ProductDto(
     val id: String,
     val categoryId: String,
     val imageUrl: String,

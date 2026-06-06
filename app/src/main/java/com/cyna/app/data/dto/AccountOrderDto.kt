@@ -3,7 +3,7 @@ package com.cyna.app.data.dto
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal data class AccountOrderDto(
+data class AccountOrderDto(
     val id: String,
     val userId: String,
     val status: String,
