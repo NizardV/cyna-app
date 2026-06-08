@@ -10,7 +10,7 @@ import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.cio.CIO
 import org.koin.dsl.module
 
-private const val RMAPI_URL = "http://98.66.234.231:8000/api/"
+private const val RMAPI_URL = " http://localhost:5104/"
 
 /**
  * Koin dependency injection module for the application.
