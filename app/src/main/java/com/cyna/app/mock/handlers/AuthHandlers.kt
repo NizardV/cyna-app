@@ -6,13 +6,26 @@ import com.cyna.app.mock.registry.MockHandler
 import io.ktor.http.*
 
 // ---------------------------------------------------------------------------
-// Auth handlers — mirrors handlers/auth.js
+// Auth handlers — miroir de handlers/auth.js
 // ---------------------------------------------------------------------------
 
 val authHandlers: List<MockHandler> = listOf(
 
-    // POST /auth/logout
-    // The client deletes its token regardless — handler may fail randomly
+    // POST /auth/login
+    MockHandler(
+        method = HttpMethod.Post,
+        path = "/auth/login",
+        resolver = { _, _ -> MockFactories.makeAuthResponse(MockFactories.makeDemoUser()) }
+    ),
+
+    // POST /auth/register
+    MockHandler(
+        method = HttpMethod.Post,
+        path = "/auth/register",
+        resolver = { _, _ -> MockFactories.makeAuthResponse() }
+    ),
+
+    // POST /auth/logout — peut échouer aléatoirement (25%)
     MockHandler(
         method = HttpMethod.Post,
         path = "/auth/logout",
@@ -27,12 +40,5 @@ val authHandlers: List<MockHandler> = listOf(
         method = HttpMethod.Post,
         path = "/auth/reset-password",
         resolver = { _, _ -> MessageResponse("Mot de passe réinitialisé avec succès.") }
-    ),
-
-    // GET /auth/me — fixed demo user
-    MockHandler(
-        method = HttpMethod.Get,
-        path = "/auth/me",
-        resolver = { _, _ -> MockFactories.makeDemoUser() }
     ),
 )

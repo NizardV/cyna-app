@@ -53,7 +53,7 @@ fun NavController.navigate(
 fun NavHost(navController: NavHostController, modifier: Modifier = Modifier) {
     androidx.navigation.compose.NavHost(
         navController = navController,
-        startDestination = Destination.OrdersHistory.route,
+        startDestination = Destination.Profile.route,
         modifier = modifier
     ) {
         composable(Destination.OrdersHistory) {
