@@ -3,11 +3,13 @@ package com.cyna.app.di
 import com.cyna.app.BuildConfig
 import com.cyna.app.data.remote.*
 import com.cyna.app.data.repository.*
+import com.cyna.app.data.util.*
 import com.cyna.app.domain.repository.*
 import com.cyna.app.mock.registry.buildMockEngine
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.cio.CIO
+import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
 private const val RMAPI_URL = " http://localhost:5104/"
@@ -49,6 +51,11 @@ private const val RMAPI_URL = " http://localhost:5104/"
  */
 val appModule = module {
     // ------------------------------------------------------------------
+    // Utilitaires Android
+    // ------------------------------------------------------------------
+    single { VibrationHelper(androidContext()) }
+
+    // ------------------------------------------------------------------
     // Engine — real (CIO) or mock, selected at compile-time flag
     // ------------------------------------------------------------------
     single<HttpClientEngine> {
@@ -65,7 +72,8 @@ val appModule = module {
     single<HttpClient> {
         createHttpClient(
             baseUrl = RMAPI_URL,
-            engine  = get()
+            engine  = get(),
+            vibrationHelper  = get()
         )
     }
 
