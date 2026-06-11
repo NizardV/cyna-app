@@ -84,6 +84,7 @@ fun NavHost(navController: NavHostController, modifier: Modifier = Modifier) {
     ) {
         composable(Destination.Login) {
             LoginScreen(
+                navController = navController,
                 onNavigateToRegister = { navController.navigateTo(Destination.Register) },
                 onLoginSuccess = {
                     navController.navigateTo(Destination.OrdersHistory) {
@@ -94,6 +95,7 @@ fun NavHost(navController: NavHostController, modifier: Modifier = Modifier) {
         }
         composable(Destination.Register) {
             RegisterScreen(
+                navController = navController,
                 onNavigateToLogin = { navController.navigateTo(Destination.Login) },
                 onRegisterSuccess = {
                     navController.navigateTo(Destination.OrdersHistory) {

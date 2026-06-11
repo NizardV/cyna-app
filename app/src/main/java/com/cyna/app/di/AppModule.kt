@@ -110,11 +110,4 @@ val appModule = module {
     single<AuthRepository>         { AuthRepositoryImpl(get(), get()) }
     single<UserRepository>   { UserRepositoryImpl(get()) }
     single<OrderHistoryRepository>  { OrderHistoryRepositoryImpl(get()) }
-
-    // ------------------------------------------------------------------
-    // ViewModels
-    // ------------------------------------------------------------------
-    viewModel { AuthViewModel(get(), get()) }
-    viewModel { ProfileViewModel(androidApplication()) }
-    viewModel { OrderHistoryViewModel(androidApplication()) }
 }

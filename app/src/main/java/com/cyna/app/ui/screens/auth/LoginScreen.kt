@@ -13,21 +13,44 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.cyna.app.R
 import com.cyna.app.ui.core.components.ui.FieldWithLabel
 import com.cyna.app.ui.core.components.ui.KLink
 import com.cyna.app.ui.core.components.ui.layout.MainScaffold
+import dev.kindling.compose.KScreen
 import dev.kindling.core.components.KButton
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun LoginScreen(
+    navController: NavController,
     onNavigateToRegister: () -> Unit,
     onLoginSuccess: () -> Unit,
-    viewModel: AuthViewModel = koinViewModel()
 ) {
-    val state by viewModel.state.collectAsState()
+    KScreen(
+        viewModel = viewModel<AuthViewModel>(),
+        navController = navController
+    ) { state, vm ->
+        LoginContent(
+            state = state,
+            onEmailChange = vm::onEmailChange,
+            onPasswordChange = vm::onPasswordChange,
+            onLogin = { vm.login(onLoginSuccess) },
+            onNavigateToRegister = onNavigateToRegister
+        )
+    }
+}
 
+@Composable
+private fun LoginContent(
+    state: AuthContracts.UiState = AuthContracts.UiState(),
+    onEmailChange: (String) -> Unit = {},
+    onPasswordChange: (String) -> Unit = {},
+    onLogin: () -> Unit = {},
+    onNavigateToRegister: () -> Unit = {}
+) {
     MainScaffold(showLayout = false) {
         Box(
             modifier = Modifier
@@ -72,7 +95,7 @@ fun LoginScreen(
                     FieldWithLabel(
                         label = stringResource(R.string.login_email_label),
                         value = state.email,
-                        onValueChange = viewModel::onEmailChange,
+                        onValueChange = onEmailChange,
                         placeholder = stringResource(R.string.login_email_placeholder),
                         isError = state.emailError != null,
                         enabled = !state.isLoading,
@@ -94,7 +117,7 @@ fun LoginScreen(
                     FieldWithLabel(
                         label = stringResource(R.string.login_password_label),
                         value = state.password,
-                        onValueChange = viewModel::onPasswordChange,
+                        onValueChange = onPasswordChange,
                         placeholder = stringResource(R.string.login_password_placeholder),
                         isPassword = true,
                         isError = state.passwordError != null,
@@ -126,7 +149,7 @@ fun LoginScreen(
 
                     KButton(
                         text = stringResource(R.string.login_button),
-                        onClick = { viewModel.login(onLoginSuccess) },
+                        onClick = onLogin,
                         isLoading = state.isLoading,
                         modifier = Modifier.fillMaxWidth()
                     )
