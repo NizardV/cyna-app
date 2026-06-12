@@ -11,20 +11,48 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.cyna.app.R
 import com.cyna.app.ui.core.components.ui.FieldWithLabel
 import com.cyna.app.ui.core.components.ui.layout.MainScaffold
+import dev.kindling.compose.KScreen
 import dev.kindling.core.components.KButton
-import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun RegisterScreen(
+    navController: NavController,
     onNavigateToLogin: () -> Unit,
     onRegisterSuccess: () -> Unit,
-    viewModel: AuthViewModel = koinViewModel()
 ) {
-    val state by viewModel.state.collectAsState()
+    KScreen(
+        viewModel = viewModel<AuthViewModel>(),
+        navController = navController
+    ) { state, vm ->
+        RegisterContent(
+            state = state,
+            onFullNameChange = vm::onFullNameChange,
+            onEmailChange = vm::onEmailChange,
+            onPasswordChange = vm::onPasswordChange,
+            onConfirmPasswordChange = vm::onConfirmPasswordChange,
+            onAcceptTermsChange = vm::onAcceptTermsChange,
+            onRegister = { vm.register(onRegisterSuccess) },
+            onNavigateToLogin = onNavigateToLogin
+        )
+    }
+}
 
+@Composable
+private fun RegisterContent(
+    state: AuthContracts.UiState = AuthContracts.UiState(),
+    onFullNameChange: (String) -> Unit = {},
+    onEmailChange: (String) -> Unit = {},
+    onPasswordChange: (String) -> Unit = {},
+    onConfirmPasswordChange: (String) -> Unit = {},
+    onAcceptTermsChange: (Boolean) -> Unit = {},
+    onRegister: () -> Unit = {},
+    onNavigateToLogin: () -> Unit = {}
+) {
     MainScaffold(showLayout = false) {
         Box(
             modifier = Modifier
@@ -62,7 +90,7 @@ fun RegisterScreen(
                     FieldWithLabel(
                         label = stringResource(R.string.register_name_label),
                         value = state.fullName,
-                        onValueChange = viewModel::onFullNameChange,
+                        onValueChange = onFullNameChange,
                         placeholder = stringResource(R.string.register_name_placeholder),
                         isError = state.fullNameError != null,
                         enabled = !state.isLoading,
@@ -84,7 +112,7 @@ fun RegisterScreen(
                     FieldWithLabel(
                         label = stringResource(R.string.register_email_label),
                         value = state.email,
-                        onValueChange = viewModel::onEmailChange,
+                        onValueChange = onEmailChange,
                         placeholder = stringResource(R.string.register_email_placeholder),
                         isError = state.emailError != null,
                         enabled = !state.isLoading,
@@ -106,7 +134,7 @@ fun RegisterScreen(
                     FieldWithLabel(
                         label = stringResource(R.string.register_password_label),
                         value = state.password,
-                        onValueChange = viewModel::onPasswordChange,
+                        onValueChange = onPasswordChange,
                         placeholder = stringResource(R.string.login_password_placeholder),
                         isPassword = true,
                         isError = state.passwordError != null,
@@ -129,7 +157,7 @@ fun RegisterScreen(
                     FieldWithLabel(
                         label = stringResource(R.string.register_confirm_password_label),
                         value = state.confirmPassword,
-                        onValueChange = viewModel::onConfirmPasswordChange,
+                        onValueChange = onConfirmPasswordChange,
                         placeholder = stringResource(R.string.login_password_placeholder),
                         isPassword = true,
                         isError = state.confirmPasswordError != null,
@@ -155,7 +183,7 @@ fun RegisterScreen(
                     ) {
                         Checkbox(
                             checked = state.acceptTerms,
-                            onCheckedChange = viewModel::onAcceptTermsChange,
+                            onCheckedChange = onAcceptTermsChange,
                             enabled = !state.isLoading
                         )
                         Text(
@@ -169,7 +197,7 @@ fun RegisterScreen(
 
                     KButton(
                         text = stringResource(R.string.register_button),
-                        onClick = { viewModel.register(onRegisterSuccess) },
+                        onClick = onRegister,
                         isLoading = state.isLoading,
                         modifier = Modifier.fillMaxWidth()
                     )

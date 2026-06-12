@@ -1,104 +1,91 @@
 package com.cyna.app.ui.screens.auth
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import android.app.Application
 import com.cyna.app.data.dto.LoginRequest
 import com.cyna.app.data.dto.RegisterRequest
 import com.cyna.app.data.local.SessionManager
 import com.cyna.app.domain.repository.AuthRepository
+import dev.kindling.compose.KViewModel
 import dev.kindling.core.components.KToastManager
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
+import org.koin.core.component.inject
 
-data class AuthFormState(
-    val email: String = "",
-    val emailError: String? = null,
-    val password: String = "",
-    val passwordError: String? = null,
-    val firstName: String = "",
-    val firstNameError: String? = null,
-    val lastName: String = "",
-    val lastNameError: String? = null,
-    val confirmPassword: String = "",
-    val confirmPasswordError: String? = null,
-    val acceptTerms: Boolean = false,
-    val isLoading: Boolean = false
-)
+interface AuthContracts {
+    data class UiState(
+        val email: String = "",
+        val emailError: String? = null,
+        val password: String = "",
+        val passwordError: String? = null,
+        val fullName: String = "",
+        val fullNameError: String? = null,
+        val confirmPassword: String = "",
+        val confirmPasswordError: String? = null,
+        val acceptTerms: Boolean = false,
+        val isLoading: Boolean = false
+    )
+}
 
-class AuthViewModel(
-    private val authRepository: AuthRepository,
-    private val sessionManager: SessionManager
-) : ViewModel() {
+class AuthViewModel(application: Application) :
+    KViewModel<AuthContracts.UiState>(AuthContracts.UiState(), application) {
 
-    private val _state = MutableStateFlow(AuthFormState())
-    val state = _state.asStateFlow()
+    private val authRepository: AuthRepository by inject()
+    private val sessionManager: SessionManager by inject()
 
     fun onEmailChange(v: String) {
-        val error = if (v.isNotEmpty() && !android.util.Patterns.EMAIL_ADDRESS.matcher(v).matches()) {
-            "Invalid email format"
-        } else null
-        _state.update { it.copy(email = v, emailError = error) }
+        val error = if (v.isNotEmpty() && !android.util.Patterns.EMAIL_ADDRESS.matcher(v).matches())
+            "Invalid email format" else null
+        updateState { copy(email = v, emailError = error) }
     }
 
     fun onPasswordChange(v: String) {
-        val error = if (v.isNotEmpty() && v.length < 8) {
-            "Password must be at least 8 characters"
-        } else null
-        _state.update {
-            val newState = it.copy(password = v, passwordError = error)
-            if (newState.confirmPassword.isNotEmpty()) {
-                val confirmError = if (v != newState.confirmPassword) "Passwords do not match" else null
-                newState.copy(confirmPasswordError = confirmError)
-            } else newState
+        val error = if (v.isNotEmpty() && v.length < 8)
+            "Password must be at least 8 characters" else null
+        updateState {
+            val updated = copy(password = v, passwordError = error)
+            if (confirmPassword.isNotEmpty()) {
+                val confirmError = if (v != confirmPassword) "Passwords do not match" else null
+                updated.copy(confirmPasswordError = confirmError)
+            } else updated
         }
     }
 
-    fun onFirstNameChange(v: String) {
-        val error = if (v.isNotEmpty() && v.trim().isEmpty()) "First name cannot be empty" else null
-        _state.update { it.copy(firstName = v, firstNameError = error) }
-    }
-
-    fun onLastNameChange(v: String) {
-        val error = if (v.isNotEmpty() && v.trim().isEmpty()) "Last name cannot be empty" else null
-        _state.update { it.copy(lastName = v, lastNameError = error) }
+    fun onFullNameChange(v: String) {
+        val error = if (v.isNotEmpty() && v.trim().isEmpty()) "Name cannot be empty" else null
+        updateState { copy(fullName = v, fullNameError = error) }
     }
 
     fun onConfirmPasswordChange(v: String) {
-        val error = if (v.isNotEmpty() && v != _state.value.password) {
-            "Passwords do not match"
-        } else null
-        _state.update { it.copy(confirmPassword = v, confirmPasswordError = error) }
+        val error = if (v.isNotEmpty() && v != state.value.password)
+            "Passwords do not match" else null
+        updateState { copy(confirmPassword = v, confirmPasswordError = error) }
     }
 
-    fun onAcceptTermsChange(v: Boolean) {
-        _state.update { it.copy(acceptTerms = v) }
-    }
+    fun onAcceptTermsChange(v: Boolean) = updateState { copy(acceptTerms = v) }
 
     fun login(onSuccess: () -> Unit) {
-        val s = _state.value
+        val s = state.value
         if (s.email.isBlank() || s.password.isBlank() || s.emailError != null || s.passwordError != null) {
             KToastManager.warning("Please fix errors before submitting")
             return
         }
 
-        viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
-            try {
-                // L'appel au repo va déclencher le client Ktor.
-                // Les cookies retournés par .NET s'enregistrent dans l'instance HttpCookies.
-                authRepository.login(LoginRequest(s.email, s.password))
-                KToastManager.success("Welcome back!", "Authentication successful.")
-                onSuccess()
-            } catch (e: Exception) {
-                KToastManager.error("Login failed", e.localizedMessage ?: "Unknown error")
-            } finally {
-                _state.update { it.copy(isLoading = false) }
+        fetchData(
+            source = { authRepository.login(LoginRequest(s.email, s.password)) },
+            onResult = {
+                onSuccess {
+                    updateState { copy(isLoading = false) }
+                    KToastManager.success("Welcome back!", "Authentication successful.")
+                    onSuccess()
+                }
+                onFailure {
+                    updateState { copy(isLoading = false) }
+                }
             }
-        }
+        )
+        updateState { copy(isLoading = true) }
     }
 
     fun register(onSuccess: () -> Unit) {
-        val s = _state.value
+        val s = state.value
 
         val emailError = if (s.email.isBlank()) "Email is required"
         else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(s.email).matches()) "Invalid email format"
@@ -106,18 +93,11 @@ class AuthViewModel(
         val passwordError = if (s.password.isBlank()) "Password is required"
         else if (s.password.length < 8) "Password must be at least 8 characters"
         else null
-        val firstNameError = if (s.firstName.trim().isBlank()) "First name is required" else null
-        val lastNameError = if (s.lastName.trim().isBlank()) "Last name is required" else null
+        val fullNameError = if (s.fullName.trim().isBlank()) "Full name is required" else null
         val confirmError = if (s.confirmPassword != s.password) "Passwords do not match" else null
 
-        if (emailError != null || passwordError != null || firstNameError != null || lastNameError != null || confirmError != null) {
-            _state.update { it.copy(
-                emailError = emailError,
-                passwordError = passwordError,
-                firstNameError = firstNameError,
-                lastNameError = lastNameError,
-                confirmPasswordError = confirmError
-            ) }
+        if (emailError != null || passwordError != null || fullNameError != null || confirmError != null) {
+            updateState { copy(emailError = emailError, passwordError = passwordError, fullNameError = fullNameError, confirmPasswordError = confirmError) }
             KToastManager.warning("Please fix errors before submitting")
             return
         }
@@ -127,17 +107,19 @@ class AuthViewModel(
             return
         }
 
-        viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
-            try {
-                authRepository.register(RegisterRequest(s.firstName, s.lastName, s.email, s.password))
-                KToastManager.success("Account created!", "Welcome to Cyna.")
-                onSuccess()
-            } catch (e: Exception) {
-                KToastManager.error("Registration failed", e.localizedMessage ?: "Unknown error")
-            } finally {
-                _state.update { it.copy(isLoading = false) }
+        fetchData(
+            source = { authRepository.register(RegisterRequest(s.fullName, s.email, s.password)) },
+            onResult = {
+                onSuccess {
+                    updateState { copy(isLoading = false) }
+                    KToastManager.success("Account created!", "Welcome to Cyna.")
+                    onSuccess()
+                }
+                onFailure {
+                    updateState { copy(isLoading = false) }
+                }
             }
-        }
+        )
+        updateState { copy(isLoading = true) }
     }
 }
