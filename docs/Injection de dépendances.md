@@ -54,7 +54,7 @@ val appModule = module {
     single<HttpClientEngine> {
         when {
             BuildConfig.MOCK_API -> buildMockEngine(delayMs = 400L)
-            BuildConfig.DEBUG    -> OkHttp.create { /* SSL bypass pour 10.0.2.2 */ }
+            BuildConfig.DEBUG    -> OkHttp.create { } // SSL bypass — voir AppModule.kt
             else                 -> CIO.create()
         }
     }
@@ -185,7 +185,7 @@ val appModule = module {
 
 ```kotlin
 class NotificationViewModel(application: Application)
-    : ViewModel<NotificationContracts.UiState>(...) {
+    : ViewModel<NotificationContracts.UiState>(NotificationContracts.UiState(), application) {
 
     private val repository: NotificationRepository by inject()
 }
