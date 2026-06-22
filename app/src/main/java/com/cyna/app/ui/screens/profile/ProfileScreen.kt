@@ -19,34 +19,101 @@ import androidx.navigation.NavController
 import com.cyna.app.ui.core.components.ui.CancelDialog
 import com.cyna.app.ui.core.components.ui.FieldMaskWithLabel
 import com.cyna.app.ui.core.components.ui.FieldWithLabel
-import com.cyna.app.ui.core.components.ui.SectionCard
 import com.cyna.app.ui.core.components.ui.profile.SubscriptionRow
 import dev.kindling.compose.KScreen
 import dev.kindling.core.components.*
 
 // ── Skeleton ─────────────────────────────────────────────────────────────────
+// Matches web ProfileSkeleton: 3 cards with skeleton rows
 
 @Composable
 private fun ProfileSkeleton() {
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         repeat(3) {
-            val cs = MaterialTheme.colorScheme
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                border = BorderStroke(1.dp, cs.outline.copy(.3f)),
-                color = cs.surface,
-                modifier = Modifier.fillMaxWidth()
-            ) {
+            ProfileSectionCard(title = "", description = "", loadingHeader = true) {}
+        }
+    }
+}
+
+// ── ProfileSectionCard — mirrors shadcn Card with border-b header ─────────────
+//
+// Matches web:
+//   <Card>
+//     <CardHeader className="border-b"><CardTitle>…</CardTitle><CardDescription>…</CardDescription></CardHeader>
+//     <CardContent className="pt-4">…</CardContent>
+//   </Card>
+
+@Composable
+private fun ProfileSectionCard(
+    title: String,
+    description: String,
+    modifier: Modifier = Modifier,
+    loadingHeader: Boolean = false,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    val cs = MaterialTheme.colorScheme
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        color = Color.White,
+        shadowElevation = 0.dp,
+        border = BorderStroke(1.dp, Color(0xFFE5E7EB))
+    ) {
+        Column {
+            // Header with bottom divider
+            if (loadingHeader) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Skeleton(modifier = Modifier.fillMaxWidth(0.4f).height(13.dp))
+                    Skeleton(modifier = Modifier.fillMaxWidth(0.65f).height(10.dp))
+                }
+            } else {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 14.dp)
+                ) {
+                    Text(
+                        title,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF111827)
+                    )
+                    if (description.isNotBlank()) {
+                        Spacer(Modifier.height(2.dp))
+                        Text(
+                            description,
+                            fontSize = 12.sp,
+                            color = Color(0xFF6B7280),
+                            lineHeight = 18.sp
+                        )
+                    }
+                }
+            }
+            HorizontalDivider(color = Color(0xFFE5E7EB), thickness = 1.dp)
+
+            // Content
+            if (loadingHeader) {
                 Column(
                     modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Skeleton(modifier = Modifier.fillMaxWidth(.5f).height(14.dp))
-                    Skeleton(modifier = Modifier.fillMaxWidth(.7f).height(11.dp))
-                    HorizontalDivider(color = cs.outline.copy(.3f))
-                    Skeleton(modifier = Modifier.fillMaxWidth().height(36.dp))
-                    Skeleton(modifier = Modifier.fillMaxWidth().height(36.dp))
+                    Skeleton(modifier = Modifier.fillMaxWidth().height(34.dp))
+                    Skeleton(modifier = Modifier.fillMaxWidth().height(34.dp))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                        Skeleton(modifier = Modifier.width(100.dp).height(32.dp))
+                    }
                 }
+            } else {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    content = content
+                )
             }
         }
     }
@@ -55,25 +122,29 @@ private fun ProfileSkeleton() {
 // ── Screen entry ─────────────────────────────────────────────────────────────
 
 @Composable
-fun ProfileScreen(navController: NavController) {
+fun ProfileScreen(
+    navController: NavController,
+    onNavigateTo2FA: () -> Unit = {}
+) {
     KScreen(
         viewModel = viewModel<ProfileViewModel>(),
         navController = navController
     ) { state, viewModel ->
         ProfileContent(
-            state                    = state,
-            onFirstNameChange        = viewModel::onFirstNameChange,
-            onLastNameChange         = viewModel::onLastNameChange,
-            onEmailChange            = viewModel::onEmailChange,
-            onEmailValidationChange  = viewModel::onEmailValidationChange,
-            onCurrentPasswordChange  = viewModel::onCurrentPasswordChange,
-            onNewPasswordChange      = viewModel::onNewPasswordChange,
-            onConfirmPasswordChange  = viewModel::onConfirmPasswordChange,
-            onSaveProfile            = viewModel::saveProfile,
-            onSavePassword           = viewModel::savePassword,
-            onCancelRequest          = viewModel::requestCancel,
-            onDismissCancel          = viewModel::dismissCancel,
-            onConfirmCancel          = viewModel::confirmCancel,
+            state                   = state,
+            onFirstNameChange       = viewModel::onFirstNameChange,
+            onLastNameChange        = viewModel::onLastNameChange,
+            onEmailChange           = viewModel::onEmailChange,
+            onEmailValidationChange = viewModel::onEmailValidationChange,
+            onCurrentPasswordChange = viewModel::onCurrentPasswordChange,
+            onNewPasswordChange     = viewModel::onNewPasswordChange,
+            onConfirmPasswordChange = viewModel::onConfirmPasswordChange,
+            onSaveProfile           = viewModel::saveProfile,
+            onSavePassword          = viewModel::savePassword,
+            onCancelRequest         = viewModel::requestCancel,
+            onDismissCancel         = viewModel::dismissCancel,
+            onConfirmCancel         = viewModel::confirmCancel,
+            onNavigateTo2FA         = onNavigateTo2FA
         )
     }
 }
@@ -95,143 +166,223 @@ private fun ProfileContent(
     onCancelRequest: (Subscription) -> Unit = {},
     onDismissCancel: () -> Unit = {},
     onConfirmCancel: () -> Unit = {},
+    onNavigateTo2FA: () -> Unit = {}
 ) {
-    val cs = MaterialTheme.colorScheme
-
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .windowInsetsPadding(WindowInsets.systemBars)
     ) {
-        if (state.loadingUser) {
-            ProfileSkeleton()
-        } else {
+        // Background matches web profile page (white layout, cards only)
+        Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFf4f4f6)) {}
 
-            // ── Informations personnelles ────────────────────────────────────
-            SectionCard(
-                title = "Personal Information",
-                description = "Manage your contact information and email address."
-            ) {
-                // Prénom + Nom côte à côte
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    FieldWithLabel(
-                        label = "First name",
-                        value = state.firstNameInput,
-                        onValueChange = onFirstNameChange,
-                        placeholder = "Jean",
-                        modifier = Modifier.weight(1f)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // Page title
+            Text(
+                "Mon profil",
+                fontSize = 17.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF111827)
+            )
+
+            if (state.loadingUser) {
+                ProfileSkeleton()
+            } else {
+
+                // ── 1. Personal Information ────────────────────────────────────
+                //   Matches web: firstName, lastName, email + verified badge + save btn
+                ProfileSectionCard(
+                    title = "Informations personnelles",
+                    description = "Gérez vos coordonnées et votre adresse email."
+                ) {
+                    // First + Last name row
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        FieldWithLabel(
+                            label = "Prénom",
+                            value = state.firstNameInput,
+                            onValueChange = onFirstNameChange,
+                            placeholder = "Jean",
+                            enabled = !state.savingProfile,
+                            modifier = Modifier.weight(1f)
+                        )
+                        FieldWithLabel(
+                            label = "Nom",
+                            value = state.lastNameInput,
+                            onValueChange = onLastNameChange,
+                            placeholder = "Dupont",
+                            enabled = !state.savingProfile,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+
+                    // Email + "Verified" badge (matches web)
+                    FieldMaskWithLabel(
+                        label = "Adresse email",
+                        value = state.emailInput,
+                        mask = KMaskPattern.Email,
+                        onValueChange = onEmailChange,
+                        onValidationChange = onEmailValidationChange,
+                        enabled = !state.savingProfile,
+                        trailingContent = if (state.user?.isEmailVerified == true) {
+                            {
+                                Spacer(Modifier.width(6.dp))
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = Color(0xFF16A34A).copy(0.10f)
+                                ) {
+                                    Text(
+                                        "Vérifié",
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        color = Color(0xFF16A34A)
+                                    )
+                                }
+                            }
+                        } else null
                     )
-                    FieldWithLabel(
-                        label = "Last name",
-                        value = state.lastNameInput,
-                        onValueChange = onLastNameChange,
-                        placeholder = "Dupont",
-                        modifier = Modifier.weight(1f)
-                    )
+
+                    // Non-verified warning link (matches web amber text)
+                    if (state.user?.isEmailVerified == false) {
+                        Text(
+                            "Adresse non vérifiée. Vérifier maintenant",
+                            fontSize = 12.sp,
+                            color = Color(0xFFD97706),
+                            modifier = Modifier.padding(top = 2.dp)
+                        )
+                    }
+
+                    // Save button — right-aligned
+                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
+                        KButton(
+                            onClick = onSaveProfile,
+                            isLoading = state.savingProfile,
+                            enabled = state.emailValid && !state.savingProfile,
+                            size = KButtonSize.Sm
+                        ) { Text(if (state.savingProfile) "Enregistrement…" else "Enregistrer") }
+                    }
                 }
 
-                // Email avec badge "Verified" si isEmailVerified
-                FieldMaskWithLabel(
-                    label = "Email address",
-                    value = state.emailInput,
-                    mask = KMaskPattern.Email,
-                    onValueChange = onEmailChange,
-                    onValidationChange = onEmailValidationChange,
-                    trailingContent = if (state.user?.isEmailVerified == true) {
-                        {
-                            Spacer(Modifier.width(6.dp))
-                            Surface(
-                                shape = RoundedCornerShape(6.dp),
-                                color = Color(0xFF16A34A).copy(.1f)
+                // ── 2. Security ────────────────────────────────────────────────
+                //   Matches web: currentPassword, newPassword, confirmPassword + optional 2FA row
+                ProfileSectionCard(
+                    title = "Sécurité",
+                    description = "Mettez à jour votre mot de passe pour sécuriser votre accès."
+                ) {
+                    FieldWithLabel(
+                        label = "Mot de passe actuel",
+                        value = state.currentPassword,
+                        onValueChange = onCurrentPasswordChange,
+                        placeholder = "••••••••",
+                        isPassword = true,
+                        enabled = !state.savingPassword,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        FieldWithLabel(
+                            label = "Nouveau mot de passe",
+                            value = state.newPassword,
+                            onValueChange = onNewPasswordChange,
+                            isPassword = true,
+                            isError = state.passwordError != null,
+                            enabled = !state.savingPassword,
+                            modifier = Modifier.weight(1f)
+                        )
+                        FieldWithLabel(
+                            label = "Confirmation",
+                            value = state.confirmPassword,
+                            onValueChange = onConfirmPasswordChange,
+                            isPassword = true,
+                            isError = state.passwordError == "mismatch",
+                            enabled = !state.savingPassword,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+
+                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
+                        KButton(
+                            onClick = onSavePassword,
+                            isLoading = state.savingPassword,
+                            variant = KButtonVariant.Outline,
+                            size = KButtonSize.Sm
+                        ) { Text(if (state.savingPassword) "Mise à jour…" else "Mettre à jour") }
+                    }
+
+                    // 2FA row (visible only for Admin / SuperAdmin) — matches web
+                    val role = state.user?.role
+                    if (role == "Admin" || role == "SuperAdmin") {
+                        HorizontalDivider(color = Color(0xFFE5E7EB), thickness = 0.5.dp)
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = Color.White,
+                            border = BorderStroke(1.dp, Color(0xFFE5E7EB)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text(
-                                    "Verified",
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = Color(0xFF16A34A)
+                                Column {
+                                    Text(
+                                        "Double authentification (2FA)",
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        color = Color(0xFF111827)
+                                    )
+                                    Text(
+                                        "Requis pour la connexion à l'espace administrateur.",
+                                        fontSize = 11.sp,
+                                        color = Color(0xFF6B7280)
+                                    )
+                                }
+                                KButton(
+                                    text = "Configurer",
+                                    onClick = onNavigateTo2FA,
+                                    variant = KButtonVariant.Outline,
+                                    size = KButtonSize.Sm
                                 )
                             }
                         }
-                    } else null
-                )
-
-                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
-                    KButton(
-                        onClick = onSaveProfile,
-                        isLoading = state.savingProfile,
-                        enabled = state.emailValid,
-                        size = KButtonSize.Sm
-                    ) { Text(if (state.savingProfile) "Saving…" else "Save changes") }
-                }
-            }
-
-            // ── Sécurité ────────────────────────────────────────────────────
-            SectionCard(
-                title = "Account Security",
-                description = "Update your password to secure access to your services."
-            ) {
-                FieldWithLabel(
-                    "Current password",
-                    state.currentPassword,
-                    onCurrentPasswordChange,
-                    isPassword = true
-                )
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    FieldWithLabel(
-                        "New password",
-                        state.newPassword,
-                        onNewPasswordChange,
-                        modifier = Modifier.weight(1f),
-                        isPassword = true,
-                        isError = state.passwordError != null
-                    )
-                    FieldWithLabel(
-                        "Confirm",
-                        state.confirmPassword,
-                        onConfirmPasswordChange,
-                        modifier = Modifier.weight(1f),
-                        isPassword = true,
-                        isError = state.passwordError == "mismatch"
-                    )
-                }
-                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
-                    KButton(
-                        onClick = onSavePassword,
-                        isLoading = state.savingPassword,
-                        variant = KButtonVariant.Outline,
-                        size = KButtonSize.Sm
-                    ) { Text(if (state.savingPassword) "Updating…" else "Update password") }
-                }
-            }
-
-            // ── Abonnements ─────────────────────────────────────────────────
-            SectionCard(
-                title = "Active Subscriptions",
-                description = "Manage your current licenses."
-            ) {
-                if (state.loadingSubs) {
-                    repeat(2) {
-                        Skeleton(modifier = Modifier.fillMaxWidth().height(60.dp))
                     }
-                } else if (state.subscriptions.isEmpty()) {
-                    Text(
-                        "No active subscriptions at the moment.",
-                        fontSize = 12.sp,
-                        color = cs.onSurfaceVariant
-                    )
-                } else {
-                    state.subscriptions.forEach { sub ->
-                        SubscriptionRow(sub = sub, onCancel = { onCancelRequest(sub) })
+                }
+
+                // ── 3. Subscriptions ───────────────────────────────────────────
+                //   Matches web: list of active subscriptions or empty state
+                ProfileSectionCard(
+                    title = "Abonnements actifs",
+                    description = "Gérez vos licences en cours."
+                ) {
+                    if (state.loadingSubs) {
+                        repeat(2) {
+                            Skeleton(modifier = Modifier.fillMaxWidth().height(60.dp))
+                        }
+                    } else if (state.subscriptions.isEmpty()) {
+                        Text(
+                            "Aucun abonnement actif pour le moment.",
+                            fontSize = 12.sp,
+                            color = Color(0xFF9CA3AF)
+                        )
+                    } else {
+                        state.subscriptions.forEach { sub ->
+                            SubscriptionRow(sub = sub, onCancel = { onCancelRequest(sub) })
+                        }
                     }
                 }
             }
         }
     }
 
-    // Dialog de confirmation de résiliation
+    // Cancel dialog
     state.cancelTarget?.let { sub ->
         CancelDialog(
             sub = sub,

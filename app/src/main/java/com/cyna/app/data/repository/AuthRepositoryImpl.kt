@@ -28,9 +28,6 @@ internal class AuthRepositoryImpl(
      */
     override suspend fun login(request: LoginRequest): MessageResponse {
         val response = authAPI.login(request)
-        // cyna_token and cyna_refresh_token cookies are stored automatically by
-        // SessionManagerCookieStorage (via the HttpCookies plugin) during the response pipeline.
-        // In mock mode (no Set-Cookie headers), we fall back to a fake token so navigation works.
         if (sessionManager.token.value.isNullOrEmpty()) {
             sessionManager.saveTokens("mock-session-token", "mock-refresh-token")
         }
@@ -38,11 +35,10 @@ internal class AuthRepositoryImpl(
         return response
     }
 
-    override suspend fun register(request: RegisterRequest): MessageResponse {
-        return authAPI.register(request)
-    }
+    override suspend fun register(request: RegisterRequest): MessageResponse =
+        authAPI.register(request)
 
-    /** Invalide la session serveur puis efface les tokens locaux (dans `finally` pour garantir le nettoyage). */
+    /** Invalide la session serveur puis efface les tokens locaux. */
     override suspend fun logout() {
         val refreshToken = sessionManager.refreshToken.value
         try {
@@ -51,4 +47,16 @@ internal class AuthRepositoryImpl(
             sessionManager.clearSession()
         }
     }
+
+    override suspend fun forgotPassword(email: String): MessageResponse =
+        authAPI.forgotPassword(email)
+
+    override suspend fun resetPassword(
+        email: String,
+        code: String,
+        newPassword: String
+    ): MessageResponse = authAPI.resetPassword(email, code, newPassword)
+
+    override suspend fun confirmEmail(email: String, code: String): MessageResponse =
+        authAPI.confirmEmail(email, code)
 }

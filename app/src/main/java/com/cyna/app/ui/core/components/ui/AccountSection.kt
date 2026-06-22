@@ -17,10 +17,11 @@ import org.koin.compose.koinInject
 @Composable
 fun AccountSection(
     initialTab: NavTab = NavTab.ORDERS,
+    onNavigateTo2FA: () -> Unit = {}
 ) {
-    val innerNav = rememberNavController()
+    val innerNav      = rememberNavController()
     val authRepository: AuthRepository = koinInject()
-    val scope = rememberCoroutineScope()
+    val scope         = rememberCoroutineScope()
 
     val backStackEntry by innerNav.currentBackStackEntryAsState()
     val currentTab = when (backStackEntry?.destination?.route) {
@@ -31,7 +32,7 @@ fun AccountSection(
     Scaffold(
         bottomBar = {
             BottomNavBar(
-                currentTab = currentTab,
+                currentTab  = currentTab,
                 onTabSelected = { tab ->
                     val route = when (tab) {
                         NavTab.ORDERS  -> "orders"
@@ -40,31 +41,27 @@ fun AccountSection(
                     innerNav.navigate(route) {
                         popUpTo(innerNav.graph.startDestinationId) { saveState = true }
                         launchSingleTop = true
-                        restoreState = true
+                        restoreState    = true
                     }
                 },
                 onLogout = {
                     scope.launch {
                         runCatching { authRepository.logout() }
-                            .onSuccess {
-                                // Logic to navigate back to login would be handled by the outer NavHost
-                                // since it observes SessionManager.user
-                            }
                     }
                 }
             )
         }
     ) { innerPadding ->
         NavHost(
-            modifier = Modifier.padding(innerPadding),
-            navController = innerNav,
+            modifier         = Modifier.padding(innerPadding),
+            navController    = innerNav,
             startDestination = when (initialTab) {
                 NavTab.ORDERS  -> "orders"
                 NavTab.PROFILE -> "profile"
             }
         ) {
-            composable("orders") { OrderHistoryScreen(innerNav) }
-            composable("profile") { ProfileScreen(innerNav) }
+            composable("orders")  { OrderHistoryScreen(innerNav) }
+            composable("profile") { ProfileScreen(innerNav, onNavigateTo2FA = onNavigateTo2FA) }
         }
     }
 }
