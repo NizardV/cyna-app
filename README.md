@@ -9,8 +9,6 @@
 
 ```
 docs/
-├── README.md                        ← Ce fichier (index)
-│
 ├── 01_Structure_et_conventions.md   ← Arborescence, règles de nommage, principes généraux
 ├── 02_Architecture.md               ← Clean Architecture, flux de données, diagrammes
 │
