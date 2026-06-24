@@ -26,13 +26,18 @@ val appModule = module {
 
     /**
      * Sélection du moteur HTTP selon l'environnement :
-     * - MOCK_API=true → MockEngine (mémoire, pas de réseau).
-     * - DEBUG=true    → OkHttp avec SSL bypass (émulateur + certificat auto-signé).
-     * - Production    → CIO.
+     * - `MOCK_API=true` → [buildMockEngine] (pas de réseau, réponses en mémoire).
+     * - `DEBUG=true`    → OkHttp avec SSL bypass total (nécessaire pour l'émulateur Android
+     *                     qui expose l'API locale via `10.0.2.2` avec un certificat auto-signé).
+     *                     CIO ne permet pas de court-circuiter la vérification d'hostname.
+     * - Production      → CIO (moteur Kotlin natif, pas de dépendance OkHttp).
      */
     single<HttpClientEngine> {
         when {
             BuildConfig.MOCK_API -> buildMockEngine(delayMs = 400L)
+
+            // Debug: OkHttp engine with all-trusting SSL + hostname verifier disabled.
+            // CIO does its own hostname check that can't be bypassed via trust manager alone.
             BuildConfig.DEBUG -> {
                 val tm = trustAllTrustManager()
                 val sslContext = SSLContext.getInstance("TLS").apply {
@@ -63,10 +68,11 @@ val appModule = module {
     single { UserAPI(get()) }
     single { OrderHistoryAPI(get()) }
     single { TwoFactorAPI(get()) }
+    single { ServiceAPI(get()) }
 
-    // ── Repository layer ──────────────────────────────────────────────────────
-    single<AuthRepository>         { AuthRepositoryImpl(get(), get(), get()) }
-    single<UserRepository>         { UserRepositoryImpl(get()) }
+    single<ServiceRepository> { ServiceRepositoryImpl(get()) }
+    single<AuthRepository>        { AuthRepositoryImpl(get(), get(), get()) }
+    single<UserRepository>        { UserRepositoryImpl(get()) }
     single<OrderHistoryRepository> { OrderHistoryRepositoryImpl(get()) }
     single<TwoFactorRepository>    { TwoFactorRepositoryImpl(get()) }
 }

@@ -41,6 +41,18 @@ private fun futureDateIso(daysAhead: Int = Random.nextInt(30) + 30): String {
 // Mock DTOs — shape identique aux DTOs v1
 // ---------------------------------------------------------------------------
 
+
+@Serializable
+data class MockPurchasedService(
+    val id: String,
+    val name: String,
+    val category: String,
+    val status: String,
+    val activeUsage: Int,
+    val totalLicenses: Int,
+    val threatsBlocked: Int,
+    val lastSyncTime: String
+)
 // UserProfileDto
 @Serializable
 data class MockUser(
