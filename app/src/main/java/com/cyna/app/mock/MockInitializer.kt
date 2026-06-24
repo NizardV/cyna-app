@@ -10,9 +10,7 @@ import com.cyna.app.mock.registry.MockRegistry
  * Call this **once** during app startup — before any Ktor request is made.
  * In production builds this object should never be referenced.
  *
- * Mirrors `mocks/index.js`.
- *
- * Usage in [Application.onCreate]:
+ * Usage in Application.onCreate:
  * ```kotlin
  * if (BuildConfig.MOCK_API) {
  *     MockInitializer.init(debug = BuildConfig.DEBUG)
@@ -27,10 +25,12 @@ object MockInitializer {
         MockRegistry.clear()
 
         MockRegistry.registerMany(
-                authHandlers
-                + userHandlers
-                + subscriptionHandlers
-                + accountOrderHandlers
+            authHandlers          // login, register, logout, me,
+                    // forgot-password, reset-password, confirm-email
+                    + twoFactorHandlers   // 2fa/setup, 2fa/confirm
+                    + userHandlers
+                    + subscriptionHandlers
+                    + accountOrderHandlers
         )
 
         if (debug) {

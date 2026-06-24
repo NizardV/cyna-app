@@ -20,4 +20,13 @@ interface AuthRepository {
 
     /** Invalide la session côté serveur et efface les tokens locaux. */
     suspend fun logout()
+
+    /** Envoie un code OTP de réinitialisation de mot de passe à l'email fourni. */
+    suspend fun forgotPassword(email: String): MessageResponse
+
+    /** Réinitialise le mot de passe en validant le code OTP reçu par email. */
+    suspend fun resetPassword(email: String, code: String, newPassword: String): MessageResponse
+
+    /** Confirme l'adresse email via le code OTP reçu. */
+    suspend fun confirmEmail(email: String, code: String): MessageResponse
 }

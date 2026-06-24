@@ -53,10 +53,39 @@ val authHandlers: List<MockHandler> = listOf(
         resolver = { _, _ -> MockFactories.makeDemoUser() }
     ),
 
-    // POST /auth/reset-password
+    // POST /auth/forgot-password → always 200 (anti-enumeration)
+    MockHandler(
+        method = HttpMethod.Post,
+        path = "/auth/forgot-password",
+        resolver = { _, _ ->
+            // Simulate small delay for realism; always 200
+            MessageResponse("Si cet email est enregistré, un code de réinitialisation a été envoyé.")
+        }
+    ),
+
+    // POST /auth/reset-password → { message } or error for wrong code
     MockHandler(
         method = HttpMethod.Post,
         path = "/auth/reset-password",
-        resolver = { _, _ -> MessageResponse("Mot de passe réinitialisé avec succès.") }
+        resolver = { _, body ->
+            val json = body?.let { Json.parseToJsonElement(it).jsonObject }
+            val code = json?.get("code")?.jsonPrimitive?.content ?: ""
+            // Simulate: code "000000" always fails, anything else succeeds
+            if (code == "000000") error("Code invalide ou expiré.")
+            MessageResponse("Mot de passe réinitialisé avec succès.")
+        }
+    ),
+
+    // POST /auth/confirm-email → { message } or error for wrong code
+    MockHandler(
+        method = HttpMethod.Post,
+        path = "/auth/confirm-email",
+        resolver = { _, body ->
+            val json = body?.let { Json.parseToJsonElement(it).jsonObject }
+            val code = json?.get("code")?.jsonPrimitive?.content ?: ""
+            // Simulate: code "000000" always fails, anything else succeeds
+            if (code == "000000") error("Code invalide ou expiré.")
+            MessageResponse("Adresse email confirmée avec succès.")
+        }
     ),
 )
