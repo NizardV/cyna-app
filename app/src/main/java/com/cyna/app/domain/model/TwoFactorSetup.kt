@@ -1,6 +1,6 @@
 package com.cyna.app.domain.model
 
-data class TwoFactorSetupDto(
+data class TwoFactorSetup(
     val secret: String,
     val otpAuthUrl: String
 )

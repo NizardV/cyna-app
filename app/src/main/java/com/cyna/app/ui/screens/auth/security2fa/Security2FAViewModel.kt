@@ -1,6 +1,7 @@
 package com.cyna.app.ui.screens.auth.security2fa
 
-import com.cyna.app.data.dto.TwoFactorSetupDto
+import com.cyna.app.domain.model.TwoFactorSetup
+import com.cyna.app.domain.repository.TwoFactorRepository
 import dev.kindling.compose.KViewModel
 import dev.kindling.core.components.KToastManager
 import org.koin.core.component.inject
@@ -9,7 +10,7 @@ import org.koin.core.component.inject
 
 interface Security2FAContracts {
     data class UiState(
-        val setup: TwoFactorSetupDto? = null,
+        val setup: TwoFactorSetup? = null,
         val loadingSetup: Boolean = true,
         val setupError: String? = null,
         val code: String = "",
@@ -72,11 +73,4 @@ class Security2FAViewModel(application: android.app.Application) :
             }
         )
     }
-}
-
-// ── Repository interface ───────────────────────────────────────────────────────
-
-interface TwoFactorRepository {
-    suspend fun setup(): TwoFactorSetupDto
-    suspend fun confirm(totpCode: String)
 }
