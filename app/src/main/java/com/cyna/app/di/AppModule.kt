@@ -7,7 +7,6 @@ import com.cyna.app.data.repository.*
 import com.cyna.app.data.util.*
 import com.cyna.app.domain.repository.*
 import com.cyna.app.mock.registry.buildMockEngine
-import com.cyna.app.ui.screens.auth.security2fa.TwoFactorRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.cio.CIO
