@@ -30,7 +30,7 @@ jobs:
       uses: android-actions/setup-android@v3
 
     - name: Cache Gradle dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v6
       with:
         path: |
           ~/.gradle/caches
@@ -40,7 +40,7 @@ jobs:
           ${{ runner.os }}-gradle-
 
     - name: Cache Android build
-      uses: actions/cache@v3
+      uses: actions/cache@v6
       with:
         path: |
           ~/.android/build-cache
@@ -50,7 +50,7 @@ jobs:
           ${{ runner.os }}-android-
 
     - name: Cache Kotlin
-      uses: actions/cache@v3
+      uses: actions/cache@v6
       with:
         path: |
           ~/.kotlin/cache
