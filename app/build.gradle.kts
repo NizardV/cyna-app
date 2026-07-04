@@ -15,7 +15,7 @@ val localProps = Properties().apply {
 
 android {
     namespace = "com.cyna.app"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.cyna.app"
