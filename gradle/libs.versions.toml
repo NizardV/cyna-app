@@ -14,7 +14,7 @@ koin = "4.2.2"
 # Ktor Client
 ktor = "3.6.0"
 kotlinxSerialization = "1.11.0"
-kindling = "2.0.1"
+kindling = "4.2.3"
 coil = "2.7.0"
 
 [libraries]
